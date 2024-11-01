@@ -1,7 +1,7 @@
-import "./App.css";
+import { TableSelect } from "./pages/TableSelect";
 
 function App() {
-  return <h1>Hello world</h1>;
+  return <TableSelect />;
 }
 
 export default App;

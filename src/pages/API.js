@@ -5,3 +5,17 @@ export async function GET_AUTHORITIES() {
   const result = await response.json();
   return result;
 }
+
+export async function GET_PATHS_FROM(jurisdiction, agency) {
+  const response = await fetch(`${API_ENDPOINT}/paths`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ jurisdiction, agency }),
+  });
+
+  const result = await response.json();
+  return result;
+}

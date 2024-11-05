@@ -17,10 +17,15 @@ export function TableBuilder() {
     agencies: [],
   };
 
+  const defaultLoading = {
+    paths: true,
+    canonData: false,
+  };
+
   const [authorities, setAuthorities] = useState(defaultAuthorities);
   const [paths, setPaths] = useState([]);
   const [selected, setSelected] = useState(defaultSelected);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(defaultLoading);
   const [canonData, setCanonData] = useState([]);
   const [invalid, setInvalid] = useState(false);
 
@@ -31,40 +36,34 @@ export function TableBuilder() {
 
   async function loadChart() {
     setInvalid(false);
-    // need to update this to use selected paths.
-
-    console.log("paths", paths);
-    console.log("selected", selected);
+    setLoading({ ...loading, canonData: true });
     const selectedPaths = paths.filter((path) => {
-      console.log("path", path);
       return selected.paths.includes(path.id);
     });
-
-    console.log("selectedPaths", selectedPaths);
 
     const response = await GET_CANON_DATA(selectedPaths, {});
     if (response.success) {
       setCanonData(response.canonData);
+      setLoading({ ...loading, canonData: false });
       return;
     }
-
-    setInvalid(true);
+    setLoading({ ...loading, canonData: false });
   }
 
   async function handleJurisdictionUpdate(value) {
-    setLoading(true);
+    setLoading({ ...loading, paths: true });
     setSelected({ ...selected, jurisdiction: value });
     setPaths([]);
     await fetchPaths(value, selected.agency);
-    setLoading(false);
+    setLoading({ ...loading, paths: false });
   }
 
   async function handleAgencyUpdate(value) {
-    setLoading(true);
+    setLoading({ ...loading, paths: true });
     setSelected({ ...selected, agency: value });
     setPaths([]);
     await fetchPaths(selected.jurisdiction, value);
-    setLoading(false);
+    setLoading({ ...loading, paths: false });
   }
 
   function handleCheckedUpdate(pathId) {
@@ -91,7 +90,7 @@ export function TableBuilder() {
         agency: agencies[0],
       });
       await fetchPaths(jurisdictions[0], agencies[0]);
-      setLoading(false);
+      setLoading({ ...loading, paths: false });
     }
 
     loadData();
@@ -132,7 +131,7 @@ export function TableBuilder() {
       </Area>
 
       <Area $show={true}>
-        <LoadWrapper loading={loading}>
+        <LoadWrapper loading={loading.paths}>
           <SelectContainer>
             <PathSelect
               paths={paths}
@@ -140,18 +139,17 @@ export function TableBuilder() {
               handleUpdate={handleCheckedUpdate}
             />
           </SelectContainer>
-          <button onClick={() => console.log("spaths", selected.paths)}>
-            Log
-          </button>
         </LoadWrapper>
       </Area>
       <button onClick={() => loadChart()}>Build Chart</button>
 
       <TableArea $show={canonData.length > 0}>
-        <TableEditor canonData={canonData} />
-        <Error $show={invalid}>
-          Unable to build chart from requested paths.
-        </Error>
+        <LoadWrapper loading={loading.canonData}>
+          <TableEditor canonData={canonData} />
+          <Error $show={invalid}>
+            Unable to build chart from requested paths.
+          </Error>
+        </LoadWrapper>
       </TableArea>
     </Container>
   );

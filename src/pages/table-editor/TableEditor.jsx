@@ -32,7 +32,6 @@ const sampleCanonData = [
 
 export function TableEditor(props) {
   const { canonData } = props;
-  console.log("canonData", canonData);
 
   function mapCanonData(canonData) {
     const cells = canonData.map((column) => {

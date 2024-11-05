@@ -19,3 +19,17 @@ export async function GET_PATHS_FROM(jurisdiction, agency) {
   const result = await response.json();
   return result;
 }
+
+export async function GET_CANON_DATA(paths, options) {
+  const response = await fetch(`${API_ENDPOINT}/canonData`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ paths, options }),
+  });
+
+  const result = await response.json();
+  return result;
+}

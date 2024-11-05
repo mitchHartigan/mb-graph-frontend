@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { GET_AUTHORITIES, GET_PATHS_FROM } from "../API";
+import { GET_AUTHORITIES, GET_CANON_DATA, GET_PATHS_FROM } from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 
@@ -24,6 +24,13 @@ export function TableBuilder() {
   async function fetchPaths(jurisdiction, agency) {
     const result = await GET_PATHS_FROM(jurisdiction, agency);
     setPaths(result.paths);
+  }
+
+  async function loadChart() {
+    console.log("loading chart...");
+    // need to update this to use selected paths.
+    const canonData = await GET_CANON_DATA(paths, {});
+    console.log("cData", canonData);
   }
 
   async function handleJurisdictionUpdate(value) {
@@ -120,9 +127,7 @@ export function TableBuilder() {
           </button>
         </LoadWrapper>
       </Area>
-      <button onClick={() => console.log({ authorities, paths, selected })}>
-        Build Chart
-      </button>
+      <button onClick={loadChart}>Build Chart</button>
     </Container>
   );
 }

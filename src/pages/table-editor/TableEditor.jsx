@@ -30,28 +30,22 @@ const sampleCanonData = [
   ],
 ];
 
-export function TableEditor() {
-  function mapCanonData(canonData) {
-    console.log("mapping canon data", canonData);
+export function TableEditor(props) {
+  const { canonData } = props;
+  console.log("canonData", canonData);
 
+  function mapCanonData(canonData) {
     const cells = canonData.map((column) => {
-      console.log("column", column);
       return column.map((object) => {
-        console.log("object", object);
         return <Cell data={object} />;
       });
     });
 
-    console.log("cells", cells);
     return cells;
   }
 
-  console.log("hmm", mapCanonData(sampleCanonData));
-
   return (
-    <Container $canonData={sampleCanonData}>
-      {mapCanonData(sampleCanonData)}
-    </Container>
+    <Container $canonData={canonData}>{mapCanonData(canonData)}</Container>
   );
 }
 

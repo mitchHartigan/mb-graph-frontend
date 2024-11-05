@@ -1,12 +1,12 @@
 import styled from "styled-components";
 
 export function Cell(props) {
-  const { name, height, coords } = props.data;
-  console.log("rendering cell");
+  const { properties, coords } = props.data;
+  console.log("data", props.data);
 
   return (
-    <Container $coords={coords} $name={name}>
-      <p>{name === "null" ? "" : name}</p>
+    <Container $coords={coords} $name={properties.name}>
+      <p>{properties.name === "null" ? "" : properties.name}</p>
     </Container>
   );
 }

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { GET_AUTHORITIES, GET_CANON_DATA, GET_PATHS_FROM } from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
+import { TableEditor } from "../table-editor/TableEditor";
 
 export function TableBuilder() {
   const defaultSelected = {
@@ -20,6 +21,8 @@ export function TableBuilder() {
   const [paths, setPaths] = useState([]);
   const [selected, setSelected] = useState(defaultSelected);
   const [loading, setLoading] = useState(true);
+  const [canonData, setCanonData] = useState([]);
+  const [invalid, setInvalid] = useState(false);
 
   async function fetchPaths(jurisdiction, agency) {
     const result = await GET_PATHS_FROM(jurisdiction, agency);
@@ -27,10 +30,25 @@ export function TableBuilder() {
   }
 
   async function loadChart() {
-    console.log("loading chart...");
+    setInvalid(false);
     // need to update this to use selected paths.
-    const canonData = await GET_CANON_DATA(paths, {});
-    console.log("cData", canonData);
+
+    console.log("paths", paths);
+    console.log("selected", selected);
+    const selectedPaths = paths.filter((path) => {
+      console.log("path", path);
+      return selected.paths.includes(path.id);
+    });
+
+    console.log("selectedPaths", selectedPaths);
+
+    const response = await GET_CANON_DATA(selectedPaths, {});
+    if (response.success) {
+      setCanonData(response.canonData);
+      return;
+    }
+
+    setInvalid(true);
   }
 
   async function handleJurisdictionUpdate(value) {
@@ -81,7 +99,7 @@ export function TableBuilder() {
 
   return (
     <Container>
-      <Area>
+      <Area $show={true}>
         <label htmlFor="jurisdictions">Choose a Jurisdiction</label>
         <select
           name="jurisdictions"
@@ -113,7 +131,7 @@ export function TableBuilder() {
         </select>
       </Area>
 
-      <Area>
+      <Area $show={true}>
         <LoadWrapper loading={loading}>
           <SelectContainer>
             <PathSelect
@@ -127,7 +145,14 @@ export function TableBuilder() {
           </button>
         </LoadWrapper>
       </Area>
-      <button onClick={loadChart}>Build Chart</button>
+      <button onClick={() => loadChart()}>Build Chart</button>
+
+      <TableArea $show={canonData.length > 0}>
+        <TableEditor canonData={canonData} />
+        <Error $show={invalid}>
+          Unable to build chart from requested paths.
+        </Error>
+      </TableArea>
     </Container>
   );
 }
@@ -140,8 +165,14 @@ const SelectContainer = styled.div`
   justify-content: center;
 `;
 
-const Label = styled.div`
-  cursor: pointer;
+const Error = styled.p`
+  display: ${({ $show }) => ($show ? "block" : "none")};
 `;
 
-const Area = styled.div``;
+const Area = styled.div`
+  display: ${({ $show }) => ($show ? "flex" : "none")};
+`;
+
+const TableArea = styled(Area)`
+  height: 100vh;
+`;

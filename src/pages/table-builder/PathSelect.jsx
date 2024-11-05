@@ -4,8 +4,6 @@ import { getPathStr } from "../../utils";
 export function PathSelect(props) {
   const { paths, selected, handleUpdate } = props;
 
-  console.log("test", { paths, selected });
-
   if (paths.length === 0)
     return (
       <Container>

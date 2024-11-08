@@ -1,10 +1,41 @@
 import styled from "styled-components";
-import { getPathStr } from "../../utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { PathItem } from "./PathItem";
 
 export function PathSelect(props) {
-  const { paths, selected, handleUpdate } = props;
+  const { paths, pathItems, setPathItems, selected, handleUpdate } = props;
 
-  if (paths.length === 0)
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = pathItems.indexOf(active.id);
+      const newIndex = pathItems.indexOf(over.id);
+      setPathItems(arrayMove(pathItems, oldIndex, newIndex));
+    }
+  }
+
+  if (paths.length === 0 || !paths)
     return (
       <Container>
         <p>No paths found.</p>
@@ -12,28 +43,27 @@ export function PathSelect(props) {
     );
 
   return (
-    <Container>
-      {paths.map((path) => {
-        const pathStr = getPathStr(path);
-        return (
-          <Label
-            key={pathStr}
-            htmlFor={path.id}
-            onClick={() => handleUpdate(path.id)}
-          >
-            <input
-              id={path.id}
-              name={path.id}
-              type="checkbox"
-              readOnly={true}
-              checked={selected.paths.includes(path.id)}
-              value={pathStr}
-            />
-            {pathStr}
-          </Label>
-        );
-      })}
-    </Container>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={pathItems} strategy={verticalListSortingStrategy}>
+        <Container>
+          {pathItems.map((id) => {
+            return (
+              <PathItem
+                handleUpdate={handleUpdate}
+                selected={selected}
+                paths={paths}
+                id={id}
+                key={id}
+              />
+            );
+          })}
+        </Container>
+      </SortableContext>
+    </DndContext>
   );
 }
 

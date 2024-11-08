@@ -2,8 +2,10 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import styled from "styled-components";
+import { getPathStr } from "../../utils";
 
-export function Item(props) {
+export function PathItem(props) {
+  const { handleUpdate, selected, id, paths } = props;
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: props.id });
 
@@ -12,10 +14,23 @@ export function Item(props) {
     transition,
   };
 
+  if (!paths || paths.length < 1) return;
+
+  const pathStr = getPathStr(paths.filter((path) => path.id === id)[0]);
   return (
     <Container ref={setNodeRef} style={style} {...attributes}>
       <Handle {...listeners} />
-      <Name>Name: {props.name}</Name>
+      <Label key={pathStr} htmlFor={id} onClick={() => handleUpdate(id)}>
+        <input
+          id={id}
+          name={id}
+          type="checkbox"
+          readOnly={true}
+          checked={selected.paths.includes(id)}
+          value={pathStr}
+        />
+        {pathStr}
+      </Label>
     </Container>
   );
 }
@@ -34,6 +49,6 @@ const Handle = styled.div`
   cursor: pointer;
 `;
 
-const Name = styled.p`
-  margin: 7px 0px 7px 0px;
+const Label = styled.div`
+  cursor: pointer;
 `;

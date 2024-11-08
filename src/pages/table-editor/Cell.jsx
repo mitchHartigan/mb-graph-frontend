@@ -2,7 +2,6 @@ import styled from "styled-components";
 
 export function Cell(props) {
   const { properties, coords, labels } = props.data;
-  console.log("data", props.data);
 
   return (
     <Container $coords={coords} $name={properties.name} $labels={labels}>

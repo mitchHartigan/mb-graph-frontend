@@ -5,8 +5,6 @@ import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 import { TableEditor } from "../table-editor/TableEditor";
 
-import { DragSelect } from "./dnd-select/DragSelect";
-
 export function TableBuilder() {
   const defaultSelected = {
     jurisdiction: "Select a jurisdiction",
@@ -26,6 +24,7 @@ export function TableBuilder() {
 
   const [authorities, setAuthorities] = useState(defaultAuthorities);
   const [paths, setPaths] = useState([]);
+  const [pathItems, setPathItems] = useState([]);
   const [selected, setSelected] = useState(defaultSelected);
   const [loading, setLoading] = useState(defaultLoading);
   const [canonData, setCanonData] = useState([]);
@@ -34,6 +33,7 @@ export function TableBuilder() {
   async function fetchPaths(jurisdiction, agency) {
     const result = await GET_PATHS_FROM(jurisdiction, agency);
     setPaths(result.paths);
+    setPathItems(result.paths.map((path) => path.id));
   }
 
   async function loadChart() {
@@ -56,6 +56,7 @@ export function TableBuilder() {
     setLoading({ ...loading, paths: true });
     setSelected({ ...selected, jurisdiction: value });
     setPaths([]);
+    setPathItems([]);
     await fetchPaths(value, selected.agency);
     setLoading({ ...loading, paths: false });
   }
@@ -64,6 +65,7 @@ export function TableBuilder() {
     setLoading({ ...loading, paths: true });
     setSelected({ ...selected, agency: value });
     setPaths([]);
+    setPathItems([]);
     await fetchPaths(selected.jurisdiction, value);
     setLoading({ ...loading, paths: false });
   }
@@ -101,9 +103,6 @@ export function TableBuilder() {
   return (
     <Container>
       <Area $show={true}>
-        <DragSelect />
-      </Area>
-      <Area $show={true}>
         <label htmlFor="jurisdictions">Choose a Jurisdiction</label>
         <select
           name="jurisdictions"
@@ -137,13 +136,13 @@ export function TableBuilder() {
 
       <Area $show={true}>
         <LoadWrapper loading={loading.paths}>
-          <SelectContainer>
-            <PathSelect
-              paths={paths}
-              selected={selected}
-              handleUpdate={handleCheckedUpdate}
-            />
-          </SelectContainer>
+          <PathSelect
+            paths={paths}
+            pathItems={pathItems}
+            setPathItems={setPathItems}
+            selected={selected}
+            handleUpdate={handleCheckedUpdate}
+          />
         </LoadWrapper>
       </Area>
       <button onClick={() => loadChart()}>Build Chart</button>
@@ -161,12 +160,6 @@ export function TableBuilder() {
 }
 
 const Container = styled.div``;
-
-const SelectContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-`;
 
 const Error = styled.p`
   display: ${({ $show }) => ($show ? "block" : "none")};

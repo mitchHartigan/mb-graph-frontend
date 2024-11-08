@@ -36,7 +36,7 @@ export function TableEditor(props) {
   function mapCanonData(canonData) {
     const cells = canonData.map((column) => {
       return column.map((object) => {
-        return <Cell data={object} />;
+        return <Cell data={object} key={object.key} />;
       });
     });
 

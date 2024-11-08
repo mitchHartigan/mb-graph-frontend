@@ -5,6 +5,8 @@ import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 import { TableEditor } from "../table-editor/TableEditor";
 
+import { DragSelect } from "./dnd-select/DragSelect";
+
 export function TableBuilder() {
   const defaultSelected = {
     jurisdiction: "Select a jurisdiction",
@@ -98,6 +100,9 @@ export function TableBuilder() {
 
   return (
     <Container>
+      <Area $show={true}>
+        <DragSelect />
+      </Area>
       <Area $show={true}>
         <label htmlFor="jurisdictions">Choose a Jurisdiction</label>
         <select

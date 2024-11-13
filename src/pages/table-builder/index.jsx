@@ -39,9 +39,18 @@ export function TableBuilder() {
   async function loadChart() {
     setInvalid(false);
     setLoading({ ...loading, canonData: true });
-    const selectedPaths = paths.filter((path) => {
-      return selected.paths.includes(path.id);
-    });
+
+    const getSelectedPaths = () => {
+      paths.sort((a, b) => {
+        return pathItems.indexOf(a.id) - pathItems.indexOf(b.id);
+      });
+
+      return paths.filter((path) => {
+        return selected.paths.includes(path.id);
+      });
+    };
+
+    const selectedPaths = getSelectedPaths();
 
     const response = await GET_CANON_DATA(selectedPaths, {});
     if (response.success) {

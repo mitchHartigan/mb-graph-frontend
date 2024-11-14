@@ -1,33 +1,31 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { GET_AUTHORITIES, GET_CANON_DATA, GET_PATHS_FROM } from "../API";
+import { GET_CANON_DATA, GET_PATHS_FROM, GET_LABELS } from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 import { TableEditor } from "../table-editor/TableEditor";
+import { LabelSelect } from "./LabelSelect";
 
 export function TableBuilder() {
   const defaultSelected = {
-    jurisdiction: "Select a jurisdiction",
-    agency: "Select an agency",
+    labels: [],
     paths: [],
   };
 
-  const defaultAuthorities = {
-    jurisdictions: [],
-    agencies: [],
-  };
-
   const defaultLoading = {
-    paths: true,
+    labels: true,
+    paths: false,
     canonData: false,
   };
 
-  const [authorities, setAuthorities] = useState(defaultAuthorities);
+  const [labels, setLabels] = useState([]);
   const [paths, setPaths] = useState([]);
-  const [pathItems, setPathItems] = useState([]);
+  const [pathItems, setPathItems] = useState([]); // should change to more intuitive name
+  const [canonData, setCanonData] = useState([]);
+
   const [selected, setSelected] = useState(defaultSelected);
   const [loading, setLoading] = useState(defaultLoading);
-  const [canonData, setCanonData] = useState([]);
+
   const [invalid, setInvalid] = useState(false);
 
   async function fetchPaths(jurisdiction, agency) {
@@ -61,25 +59,14 @@ export function TableBuilder() {
     setLoading({ ...loading, canonData: false });
   }
 
-  async function handleJurisdictionUpdate(value) {
+  async function loadPaths() {
     setLoading({ ...loading, paths: true });
-    setSelected({ ...selected, jurisdiction: value });
-    setPaths([]);
-    setPathItems([]);
-    await fetchPaths(value, selected.agency);
+    const paths = await GET_PATHS_FROM(selected.labels);
+    setPaths(paths);
     setLoading({ ...loading, paths: false });
   }
 
-  async function handleAgencyUpdate(value) {
-    setLoading({ ...loading, paths: true });
-    setSelected({ ...selected, agency: value });
-    setPaths([]);
-    setPathItems([]);
-    await fetchPaths(selected.jurisdiction, value);
-    setLoading({ ...loading, paths: false });
-  }
-
-  function handleCheckedUpdate(pathId) {
+  function onPathSelect(pathId) {
     const spaths = [...selected.paths];
 
     if (spaths.includes(pathId)) {
@@ -92,18 +79,25 @@ export function TableBuilder() {
     setSelected({ ...selected, paths: spaths });
   }
 
+  function onLabelSelect(label) {
+    const selectedLabels = [...selected.labels];
+
+    if (selectedLabels.includes(label)) {
+      selectedLabels.splice(selectedLabels.indexOf(label), 1);
+      setSelected({ ...selected, labels: selectedLabels });
+      return;
+    }
+
+    selectedLabels.push(label);
+    setSelected({ ...selected, labels: selectedLabels });
+  }
+
   useEffect(() => {
     async function loadData() {
-      const authorities = await GET_AUTHORITIES();
-      setAuthorities(authorities);
-      const { jurisdictions, agencies } = authorities;
-      setSelected({
-        ...selected,
-        jurisdiction: jurisdictions[0],
-        agency: agencies[0],
-      });
-      await fetchPaths(jurisdictions[0], agencies[0]);
-      setLoading({ ...loading, paths: false });
+      const { labels } = await GET_LABELS();
+      console.log("labels", labels);
+      setLabels(labels);
+      setLoading({ ...loading, labels: false });
     }
 
     loadData();
@@ -112,49 +106,35 @@ export function TableBuilder() {
   return (
     <Container>
       <Area $show={true}>
-        <label htmlFor="jurisdictions">Choose a Jurisdiction</label>
-        <select
-          name="jurisdictions"
-          value={selected.jurisdiction}
-          onChange={(evt) => handleJurisdictionUpdate(evt.target.value)}
-        >
-          {authorities.jurisdictions.map((jurisdiction) => {
-            return (
-              <option value={jurisdiction} key={jurisdiction}>
-                {jurisdiction}
-              </option>
-            );
-          })}
-        </select>
-
-        <label htmlFor="agencies">Choose an Agency</label>
-        <select
-          name="jurisdictions"
-          value={selected.agency}
-          onChange={(evt) => handleAgencyUpdate(evt.target.value)}
-        >
-          {authorities.agencies.map((agency) => {
-            return (
-              <option value={agency} key={agency}>
-                {agency}
-              </option>
-            );
-          })}
-        </select>
+        <LoadWrapper loading={loading.labels}>
+          <LabelSelect
+            labels={labels}
+            setLabels={setLabels}
+            selected={selected}
+            handleUpdate={onLabelSelect}
+          />
+        </LoadWrapper>
       </Area>
 
       <Area $show={true}>
+        <button onClick={() => loadPaths()}>Get Paths</button>
+      </Area>
+
+      <Area $show={paths.length > 0}>
         <LoadWrapper loading={loading.paths}>
           <PathSelect
             paths={paths}
             pathItems={pathItems}
             setPathItems={setPathItems}
             selected={selected}
-            handleUpdate={handleCheckedUpdate}
+            handleUpdate={onPathSelect}
           />
         </LoadWrapper>
       </Area>
-      <button onClick={() => loadChart()}>Build Chart</button>
+
+      <Area $show={true}>
+        <button onClick={() => loadChart()}>Build Chart</button>
+      </Area>
 
       <TableArea $show={canonData.length > 0}>
         <LoadWrapper loading={loading.canonData}>

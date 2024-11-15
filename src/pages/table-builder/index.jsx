@@ -61,8 +61,10 @@ export function TableBuilder() {
 
   async function loadPaths() {
     setLoading({ ...loading, paths: true });
-    const paths = await GET_PATHS_FROM(selected.labels);
+    const { paths } = await GET_PATHS_FROM(selected.labels);
+    console.log("paths", paths);
     setPaths(paths);
+    setPathItems(paths.map((path) => path.id));
     setLoading({ ...loading, paths: false });
   }
 
@@ -120,7 +122,7 @@ export function TableBuilder() {
         <button onClick={() => loadPaths()}>Get Paths</button>
       </Area>
 
-      <Area $show={paths.length > 0}>
+      <Area $show={true}>
         <LoadWrapper loading={loading.paths}>
           <PathSelect
             paths={paths}

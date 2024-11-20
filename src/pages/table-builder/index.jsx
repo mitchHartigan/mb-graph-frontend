@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { GET_CANON_DATA, GET_PATHS_FROM, GET_LABELS } from "../API";
+import { GET_CANON_DATA, GET_PATHS_FROM, GET_OPTIONS } from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 import { TableEditor } from "../table-editor/TableEditor";
@@ -8,17 +8,18 @@ import { LabelSelect } from "./LabelSelect";
 
 export function TableBuilder() {
   const defaultSelected = {
-    labels: [],
+    options: [],
     paths: [],
   };
 
   const defaultLoading = {
-    labels: true,
+    options: true,
     paths: false,
     canonData: false,
   };
 
   const [labels, setLabels] = useState([]);
+  const [options, setOptions] = useState([]);
   const [paths, setPaths] = useState([]);
   const [pathItems, setPathItems] = useState([]); // should change to more intuitive name
   const [canonData, setCanonData] = useState([]);
@@ -94,12 +95,17 @@ export function TableBuilder() {
     setSelected({ ...selected, labels: selectedLabels });
   }
 
+  function onValueSelect(label, value) {
+    // go to selected label and either add or remove the name value.
+    // if the value is there add it
+    // if the value is not there remove it
+  }
+
   useEffect(() => {
     async function loadData() {
-      const { labels } = await GET_LABELS();
-      console.log("labels", labels);
-      setLabels(labels);
-      setLoading({ ...loading, labels: false });
+      const { options } = await GET_OPTIONS();
+      setOptions(options);
+      setLoading({ ...loading, options: false });
     }
 
     loadData();
@@ -110,7 +116,7 @@ export function TableBuilder() {
       <Area $show={true}>
         <LoadWrapper loading={loading.labels}>
           <LabelSelect
-            labels={labels}
+            options={options}
             setLabels={setLabels}
             selected={selected}
             handleUpdate={onLabelSelect}

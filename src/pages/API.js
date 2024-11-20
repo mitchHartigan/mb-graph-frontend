@@ -1,8 +1,8 @@
 // TODO: Add better error handling.
 const API_ENDPOINT = "http://localhost:4000";
 
-export async function GET_LABELS() {
-  const response = await fetch(`${API_ENDPOINT}/labels`);
+export async function GET_OPTIONS() {
+  const response = await fetch(`${API_ENDPOINT}/options`);
   const result = await response.json();
   return result;
 }

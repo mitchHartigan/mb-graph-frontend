@@ -4,7 +4,7 @@ import { GET_CANON_DATA, GET_PATHS_FROM, GET_CRITERIA_LABELS } from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 import { TableEditor } from "../table-editor/TableEditor";
-import { LabelSelect } from "./LabelSelect";
+import { CriteriaLabelSelect } from "./CriteriaLabelSelect";
 
 export function TableBuilder() {
   const defaultOptions = {
@@ -34,10 +34,10 @@ export function TableBuilder() {
     canonData: false,
   };
 
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState(defaultOptions);
   const [selected, setSelected] = useState(defaultSelected);
 
-  const [paths, setPaths] = useState([]);
+  // const [paths, setPaths] = useState([]);
   // used for the drag and drop re-order. Path items are the ids of each path in an array, which
   // is what our dnd library uses to keep track of where each path is in the list.
   const [canonData, setCanonData] = useState([]);
@@ -71,17 +71,17 @@ export function TableBuilder() {
   // }
 
   // re-write to be onCriteriaLabelSelect, onConclusionLabelSelect, etc...
-  function onLabelSelect(label) {
-    const selectedLabels = [...selected.labels];
+  function onCriteriaLabelSelect(label) {
+    const selectedLabels = [...selected.criteriaLabels];
 
     if (selectedLabels.includes(label)) {
       selectedLabels.splice(selectedLabels.indexOf(label), 1);
-      setSelected({ ...selected, labels: selectedLabels });
+      setSelected({ ...selected, criteriaLabels: selectedLabels });
       return;
     }
 
     selectedLabels.push(label);
-    setSelected({ ...selected, labels: selectedLabels });
+    setSelected({ ...selected, criteriaLabels: selectedLabels });
   }
 
   async function loadChart() {
@@ -116,12 +116,12 @@ export function TableBuilder() {
       setLoading({ ...loading, criteriaLabels: false });
     }
 
-    loadData();
+    loadDefault();
   }, []);
 
   return (
     <Container>
-      <Area $show={true}>
+      {/* <Area $show={true}>
         <LoadWrapper loading={loading.labels}>
           <LabelSelect
             options={options}
@@ -130,13 +130,18 @@ export function TableBuilder() {
             handleUpdate={onLabelSelect}
           />
         </LoadWrapper>
-      </Area>
+      </Area> */}
 
       <Area $show={true}>
-        <button onClick={() => loadPaths()}>Get Paths</button>
+        <LoadWrapper loading={loading.criteriaLabels}>
+          <CriteriaLabelSelect
+            labels={options.criteriaLabels}
+            selected={selected}
+            handleUpdate={onCriteriaLabelSelect}
+          />
+        </LoadWrapper>
       </Area>
-
-      <Area $show={true}>
+      {/* <Area $show={true}>
         <LoadWrapper loading={loading.paths}>
           <PathSelect
             paths={paths}
@@ -146,7 +151,7 @@ export function TableBuilder() {
             handleUpdate={onPathSelect}
           />
         </LoadWrapper>
-      </Area>
+      </Area> */}
 
       <Area $show={true}>
         <button onClick={() => loadChart()}>Build Chart</button>

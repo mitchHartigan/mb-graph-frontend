@@ -7,6 +7,12 @@ export async function GET_OPTIONS() {
   return result;
 }
 
+export async function GET_CRITERIA_LABELS() {
+  const response = await fetch(`${API_ENDPOINT}/options/criteria/labels`);
+  const result = await response.json();
+  return result;
+}
+
 export async function GET_PATHS_FROM(labels) {
   const response = await fetch(`${API_ENDPOINT}/paths`, {
     method: "POST",

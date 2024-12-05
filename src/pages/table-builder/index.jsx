@@ -1,38 +1,87 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { GET_CANON_DATA, GET_PATHS_FROM, GET_OPTIONS } from "../API";
+import { GET_CANON_DATA, GET_PATHS_FROM, GET_CRITERIA_LABELS } from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 import { TableEditor } from "../table-editor/TableEditor";
 import { LabelSelect } from "./LabelSelect";
 
 export function TableBuilder() {
-  const defaultSelected = {
-    options: [],
+  const defaultOptions = {
+    criteriaLabels: [],
+    criteriaNames: [],
+    conclusionLabels: [],
+    conclusionNames: [],
     paths: [],
   };
 
+  const defaultSelected = {
+    criteriaLabels: [],
+    criteriaNames: [],
+    conclusionLabels: [],
+    conclusionNames: [],
+    pathItems: [], // should be pathItems? Or like at least this is where we should put the path items.
+  };
+
   const defaultLoading = {
-    options: true,
-    paths: false,
+    options: {
+      criteriaLabels: true,
+      criteriaNames: false,
+      conclusionLabels: false,
+      conclusionNames: false,
+      paths: false,
+    },
     canonData: false,
   };
 
-  const [labels, setLabels] = useState([]);
   const [options, setOptions] = useState([]);
+  const [selected, setSelected] = useState(defaultSelected);
+
   const [paths, setPaths] = useState([]);
-  const [pathItems, setPathItems] = useState([]); // should change to more intuitive name
+  // used for the drag and drop re-order. Path items are the ids of each path in an array, which
+  // is what our dnd library uses to keep track of where each path is in the list.
   const [canonData, setCanonData] = useState([]);
 
-  const [selected, setSelected] = useState(defaultSelected);
+  // UI State variables
   const [loading, setLoading] = useState(defaultLoading);
-
   const [invalid, setInvalid] = useState(false);
 
-  async function fetchPaths(jurisdiction, agency) {
-    const result = await GET_PATHS_FROM(jurisdiction, agency);
-    setPaths(result.paths);
-    setPathItems(result.paths.map((path) => path.id));
+  // Need to re-write to take all labels and paths.
+  // async function loadPaths() {
+  //   setLoading({ ...loading, paths: true });
+  //   const { paths } = await GET_PATHS_FROM(selected.labels);
+  //   setPaths(paths);
+  //   setPathItems(paths.map((path) => path.id));
+  //   setLoading({ ...loading, paths: false });
+  // }
+
+  // Deprecating as selecting individual paths won't be needed anymore. Users will
+  // select labels and names instead.
+  // function onPathSelect(pathId) {
+  //   const spaths = [...selected.paths];
+
+  //   if (spaths.includes(pathId)) {
+  //     spaths.splice(spaths.indexOf(pathId), 1);
+  //     setSelected({ ...selected, paths: spaths });
+  //     return;
+  //   }
+
+  //   spaths.push(pathId);
+  //   setSelected({ ...selected, paths: spaths });
+  // }
+
+  // re-write to be onCriteriaLabelSelect, onConclusionLabelSelect, etc...
+  function onLabelSelect(label) {
+    const selectedLabels = [...selected.labels];
+
+    if (selectedLabels.includes(label)) {
+      selectedLabels.splice(selectedLabels.indexOf(label), 1);
+      setSelected({ ...selected, labels: selectedLabels });
+      return;
+    }
+
+    selectedLabels.push(label);
+    setSelected({ ...selected, labels: selectedLabels });
   }
 
   async function loadChart() {
@@ -60,52 +109,11 @@ export function TableBuilder() {
     setLoading({ ...loading, canonData: false });
   }
 
-  async function loadPaths() {
-    setLoading({ ...loading, paths: true });
-    const { paths } = await GET_PATHS_FROM(selected.labels);
-    console.log("paths", paths);
-    setPaths(paths);
-    setPathItems(paths.map((path) => path.id));
-    setLoading({ ...loading, paths: false });
-  }
-
-  function onPathSelect(pathId) {
-    const spaths = [...selected.paths];
-
-    if (spaths.includes(pathId)) {
-      spaths.splice(spaths.indexOf(pathId), 1);
-      setSelected({ ...selected, paths: spaths });
-      return;
-    }
-
-    spaths.push(pathId);
-    setSelected({ ...selected, paths: spaths });
-  }
-
-  function onLabelSelect(label) {
-    const selectedLabels = [...selected.labels];
-
-    if (selectedLabels.includes(label)) {
-      selectedLabels.splice(selectedLabels.indexOf(label), 1);
-      setSelected({ ...selected, labels: selectedLabels });
-      return;
-    }
-
-    selectedLabels.push(label);
-    setSelected({ ...selected, labels: selectedLabels });
-  }
-
-  function onValueSelect(label, value) {
-    // go to selected label and either add or remove the name value.
-    // if the value is there add it
-    // if the value is not there remove it
-  }
-
   useEffect(() => {
-    async function loadData() {
-      const { options } = await GET_OPTIONS();
-      setOptions(options);
-      setLoading({ ...loading, options: false });
+    async function loadDefault() {
+      const { criteriaLabels } = await GET_CRITERIA_LABELS();
+      setOptions({ ...options, criteriaLabels });
+      setLoading({ ...loading, criteriaLabels: false });
     }
 
     loadData();

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import {
   GET_CANON_DATA,
-  GET_PATHS_FROM,
+  GET_PATHS,
   GET_CRITERIA_LABELS,
   GET_CONCLUSION_LABELS,
   GET_CRITERIA_NAMES,
@@ -27,6 +27,7 @@ export function TableBuilder() {
     criteriaNames: [],
     conclusionLabels: [],
     conclusionNames: [],
+    paths: [],
     pathItems: [], // should be pathItems? Or like at least this is where we should put the path items.
   };
 
@@ -196,6 +197,27 @@ export function TableBuilder() {
     updateConclusionNames(conclusionNames);
   }
 
+  async function getPaths() {
+    const { criteriaLabels, conclusionLabels, criteriaNames, conclusionNames } =
+      selected;
+
+    setLoading({ ...loading, paths: true });
+    const { paths } = await GET_PATHS(
+      criteriaLabels,
+      conclusionLabels,
+      criteriaNames,
+      conclusionNames
+    );
+
+    setOptions({ ...options, paths });
+    setSelected({ ...selected, pathItems: paths.map((path) => path.id) });
+    setLoading({ ...loading, paths: false });
+  }
+
+  function setPathItems(pathItems) {
+    setSelected({ ...selected, pathItems });
+  }
+
   async function loadChart() {
     setInvalid(false);
     setLoading({ ...loading, canonData: true });
@@ -219,6 +241,20 @@ export function TableBuilder() {
       return;
     }
     setLoading({ ...loading, canonData: false });
+  }
+
+  function onPathSelect(id) {
+    const { paths } = selected;
+
+    if (paths.some((path) => path.id === id)) {
+      let targetIndex = paths.findIndex((path) => path.id === id);
+      paths.splice(targetIndex, 1);
+      setSelected({ ...selected, paths });
+      return;
+    }
+
+    paths.push(options.paths.find((path) => path.id === id));
+    setSelected({ ...selected, paths });
   }
 
   useEffect(() => {
@@ -281,21 +317,29 @@ export function TableBuilder() {
         </LoadWrapper>
       </Area>
 
-      {/* <Area $show={true}>
+      <button onClick={getPaths}>Get Paths</button>
+
+      <Area $show={true}>
         <LoadWrapper loading={loading.paths}>
           <PathSelect
-            paths={paths}
-            pathItems={pathItems}
-            setPathItems={setPathItems}
+            paths={options.paths}
+            pathItems={selected.pathItems}
             selected={selected}
+            setPathItems={setPathItems}
             handleUpdate={onPathSelect}
           />
         </LoadWrapper>
-      </Area> */}
+      </Area>
 
       <Area $show={true}>
-        <button onClick={() => loadChart()}>Build Chart</button>
+        <button onClick={() => console.log({ options, selected })}>
+          Log State
+        </button>
       </Area>
+
+      {/* <Area $show={true}>
+        <button onClick={() => loadChart()}>Build Chart</button>
+      </Area> */}
 
       <TableArea $show={canonData.length > 0}>
         <LoadWrapper loading={loading.canonData}>

@@ -57,14 +57,24 @@ export async function GET_CONCLUSION_NAMES(
   return result;
 }
 
-export async function GET_PATHS_FROM(labels) {
-  const response = await fetch(`${API_ENDPOINT}/paths`, {
+export async function GET_PATHS(
+  criteriaLabels,
+  conclusionLabels,
+  criteriaNames,
+  conclusionNames
+) {
+  const response = await fetch(`${API_ENDPOINT}/options/paths`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ labels }),
+    body: JSON.stringify({
+      criteriaLabels,
+      conclusionLabels,
+      criteriaNames,
+      conclusionNames,
+    }),
   });
 
   const result = await response.json();

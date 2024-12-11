@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { getPathStr } from "../../utils";
 
 export function PathItem(props) {
-  const { handleUpdate, selected, id, paths } = props;
+  const { handleUpdate, id, paths, selected } = props;
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: props.id });
 
@@ -26,7 +26,7 @@ export function PathItem(props) {
           name={id}
           type="checkbox"
           readOnly={true}
-          checked={selected.paths.includes(id)}
+          checked={selected.paths.some((path) => path.id == id)}
           value={pathStr}
         />
         {pathStr}

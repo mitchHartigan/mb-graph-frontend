@@ -16,7 +16,7 @@ import {
 import { PathItem } from "./PathItem";
 
 export function PathSelect(props) {
-  const { paths, pathItems, setPathItems, selected, handleUpdate } = props;
+  const { paths, pathItems, selected, setPathItems, handleUpdate } = props;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -55,6 +55,7 @@ export function PathSelect(props) {
               <PathItem
                 handleUpdate={handleUpdate}
                 selected={selected}
+                pathItems={pathItems}
                 paths={paths}
                 id={id}
                 key={id}

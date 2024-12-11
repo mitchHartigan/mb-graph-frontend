@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 
 export function Item(props) {
-  const { handleUpdate, selected, value, labels, type } = props;
+  const { handleUpdate, selected, value, names, type } = props;
 
-  if (!labels || labels.length < 1) return;
+  if (!names || names.length < 1) return;
 
   return (
     <Container>

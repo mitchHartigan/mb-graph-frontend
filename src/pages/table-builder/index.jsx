@@ -5,6 +5,8 @@ import {
   GET_PATHS_FROM,
   GET_CRITERIA_LABELS,
   GET_CONCLUSION_LABELS,
+  GET_CRITERIA_NAMES,
+  GET_CONCLUSION_NAMES,
 } from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
@@ -80,11 +82,10 @@ export function TableBuilder() {
   // updates selected criteria labels.
   // clears all options and selected other than criteria by resetting them to default
   // calls GET_CONCLUSION_LABELS, updates conclusion label options with results.
-  async function onCriteriaLabelSelect(label) {
+  function onCriteriaLabelSelect(label) {
     const { criteriaLabels } = selected;
 
-    if (criteriaLabels.includes(label)) {
-      criteriaLabels.splice(criteriaLabels.indexOf(label), 1);
+    async function updateCriteriaLabels(criteriaLabels) {
       setSelected({ ...defaultSelected, criteriaLabels });
       setLoading({ ...loading, conclusionLabels: true });
       const { conclusionLabels } = await GET_CONCLUSION_LABELS(criteriaLabels);
@@ -94,38 +95,105 @@ export function TableBuilder() {
         conclusionLabels,
       });
       setLoading({ ...loading, conclusionLabels: false });
-      return;
     }
-
-    criteriaLabels.push(label);
-    setSelected({ ...defaultSelected, criteriaLabels });
-    setLoading({ ...loading, conclusionLabels: true });
-    const { conclusionLabels } = await GET_CONCLUSION_LABELS(criteriaLabels);
-    setOptions({
-      ...defaultOptions,
-      criteriaLabels: options.criteriaLabels,
-      conclusionLabels,
-    });
-    setLoading({ ...loading, conclusionLabels: false });
-  }
-
-  async function onConclusionLabelSelect(label) {
-    const { criteriaLabels } = selected;
 
     if (criteriaLabels.includes(label)) {
       criteriaLabels.splice(criteriaLabels.indexOf(label), 1);
-      setSelected({ ...defaultSelected, criteriaLabels });
-      const conclusionLabels = await GET_CONCLUSION_LABELS(criteriaLabels);
-      setOptions({ ...defaultOptions, criteriaLabels, conclusionLabels });
+      updateCriteriaLabels(criteriaLabels);
       return;
     }
 
     criteriaLabels.push(label);
-    setSelected({ ...defaultSelected, criteriaLabels });
-    setLoading({ ...loading, conclusionLabels: true });
-    const conclusionLabels = await GET_CONCLUSION_LABELS(criteriaLabels);
-    setOptions({ ...defaultOptions, criteriaLabels, conclusionLabels });
-    setLoading({ ...loading, conclusionLabels: false });
+    updateCriteriaLabels(criteriaLabels);
+  }
+
+  function onConclusionLabelSelect(label) {
+    const { criteriaLabels, conclusionLabels } = selected;
+
+    async function updateConclusionLabels(conclusionLabels) {
+      setSelected({ ...defaultSelected, criteriaLabels, conclusionLabels });
+      setLoading({ ...loading, criteriaNames: true });
+      const { criteriaNames } = await GET_CRITERIA_NAMES(
+        criteriaLabels,
+        conclusionLabels
+      );
+      setOptions({
+        ...defaultOptions,
+        criteriaLabels: options.criteriaLabels,
+        conclusionLabels: options.conclusionLabels,
+        criteriaNames,
+      });
+      setLoading({ ...loading, criteriaNames: false });
+    }
+
+    if (conclusionLabels.includes(label)) {
+      conclusionLabels.splice(conclusionLabels.indexOf(label), 1);
+      updateConclusionLabels(conclusionLabels);
+      return;
+    }
+
+    conclusionLabels.push(label);
+    updateConclusionLabels(conclusionLabels);
+  }
+
+  function onCriteriaNameSelect(name) {
+    const { criteriaLabels, conclusionLabels, criteriaNames } = selected;
+
+    async function updateCriteriaNames(criteriaNames) {
+      setSelected({
+        ...defaultSelected,
+        criteriaLabels,
+        conclusionLabels,
+        criteriaNames,
+      });
+      setLoading({ ...loading, conclusionNames: true });
+      const { conclusionNames } = await GET_CONCLUSION_NAMES(
+        criteriaLabels,
+        conclusionLabels,
+        criteriaNames
+      );
+      setOptions({
+        ...defaultOptions,
+        criteriaLabels: options.criteriaLabels,
+        conclusionLabels: options.conclusionLabels,
+        criteriaNames: options.criteriaNames,
+        conclusionNames,
+      });
+      setLoading({ ...loading, conclusionNames: false });
+    }
+
+    if (criteriaNames.includes(name)) {
+      criteriaNames.splice(criteriaNames.indexOf(name), 1);
+      updateCriteriaNames(criteriaNames);
+      return;
+    }
+
+    criteriaNames.push(name);
+    updateCriteriaNames(criteriaNames);
+  }
+
+  function onConclusionNameSelect(name) {
+    const { criteriaLabels, conclusionLabels, criteriaNames, conclusionNames } =
+      selected;
+
+    async function updateConclusionNames(conclusionNames) {
+      setSelected({
+        ...defaultSelected,
+        criteriaLabels,
+        conclusionLabels,
+        criteriaNames,
+        conclusionNames,
+      });
+    }
+
+    if (conclusionNames.includes(name)) {
+      conclusionNames.splice(conclusionNames.indexOf(name), 1);
+      updateConclusionNames(conclusionNames);
+      return;
+    }
+
+    conclusionNames.push(name);
+    updateConclusionNames(conclusionNames);
   }
 
   async function loadChart() {
@@ -165,43 +233,52 @@ export function TableBuilder() {
 
   return (
     <Container>
-      {/* <Area $show={true}>
-        <LoadWrapper loading={loading.labels}>
-          <LabelSelect
-            options={options}
-            setLabels={setLabels}
-            selected={selected}
-            handleUpdate={onLabelSelect}
-          />
-        </LoadWrapper>
-      </Area> */}
-
-      <p style={{ fontWeight: "bold" }}>Criteria Type Select</p>
+      <AreaTitle>Criteria Type Select</AreaTitle>
       <Area $show={true}>
         <LoadWrapper loading={loading.criteriaLabels}>
           <LabelSelect
+            type="criteriaLabels"
             labels={options.criteriaLabels}
             selected={selected}
             handleUpdate={onCriteriaLabelSelect}
           />
         </LoadWrapper>
-        <button onClick={() => console.log({ options, selected })}>
-          Log State
-        </button>
       </Area>
 
-      <p style={{ fontWeight: "bold" }}>Conclusion Type Select</p>
+      <AreaTitle>Conclusion Type Select</AreaTitle>
       <Area $show={options.conclusionLabels.length > 0}>
         <LoadWrapper loading={loading.conclusionLabels}>
           <LabelSelect
+            type="conclusionLabels"
             labels={options.conclusionLabels}
             selected={selected}
             handleUpdate={onConclusionLabelSelect}
           />
         </LoadWrapper>
-        <button onClick={() => console.log({ options, selected })}>
-          Log State
-        </button>
+      </Area>
+
+      <AreaTitle>Criteria Name Select</AreaTitle>
+      <Area $show={options.criteriaNames.length > 0}>
+        <LoadWrapper loading={loading.criteriaNames}>
+          <LabelSelect
+            type="criteriaNames"
+            labels={options.criteriaNames}
+            selected={selected}
+            handleUpdate={onCriteriaNameSelect}
+          />
+        </LoadWrapper>
+      </Area>
+
+      <AreaTitle>Conclusion Name Select</AreaTitle>
+      <Area $show={options.conclusionNames.length > 0}>
+        <LoadWrapper loading={loading.conclusionNames}>
+          <LabelSelect
+            type="conclusionNames"
+            labels={options.conclusionNames}
+            selected={selected}
+            handleUpdate={onConclusionNameSelect}
+          />
+        </LoadWrapper>
       </Area>
 
       {/* <Area $show={true}>
@@ -240,6 +317,10 @@ const Error = styled.p`
 
 const Area = styled.div`
   display: ${({ $show }) => ($show ? "flex" : "none")};
+`;
+
+const AreaTitle = styled.p`
+  font-weight: bold;
 `;
 
 const TableArea = styled(Area)`

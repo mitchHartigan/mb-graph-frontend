@@ -27,6 +27,36 @@ export async function GET_CONCLUSION_LABELS(criteriaLabels) {
   return result;
 }
 
+export async function GET_CRITERIA_NAMES(criteriaLabels, conclusionLabels) {
+  const response = await fetch(`${API_ENDPOINT}/options/criteria/names`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ criteriaLabels, conclusionLabels }),
+  });
+  const result = await response.json();
+  return result;
+}
+
+export async function GET_CONCLUSION_NAMES(
+  criteriaLabels,
+  conclusionLabels,
+  criteriaNames
+) {
+  const response = await fetch(`${API_ENDPOINT}/options/conclusion/names`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ criteriaLabels, conclusionLabels, criteriaNames }),
+  });
+  const result = await response.json();
+  return result;
+}
+
 export async function GET_PATHS_FROM(labels) {
   const response = await fetch(`${API_ENDPOINT}/paths`, {
     method: "POST",

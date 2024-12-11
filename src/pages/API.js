@@ -13,6 +13,20 @@ export async function GET_CRITERIA_LABELS() {
   return result;
 }
 
+export async function GET_CONCLUSION_LABELS(criteriaLabels) {
+  const response = await fetch(`${API_ENDPOINT}/options/conclusion/labels`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ criteriaLabels }),
+  });
+  const result = await response.json();
+  console.log("result", result);
+  return result;
+}
+
 export async function GET_PATHS_FROM(labels) {
   const response = await fetch(`${API_ENDPOINT}/paths`, {
     method: "POST",

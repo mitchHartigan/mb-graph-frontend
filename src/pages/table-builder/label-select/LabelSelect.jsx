@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { CriteriaLabelItem } from "./CriteriaLabelItem";
+import { Item } from "./Item";
 
-export function CriteriaLabelSelect(props) {
+export function LabelSelect(props) {
   const { labels, selected, handleUpdate } = props;
 
   if (labels.length === 0 || !labels)
@@ -15,7 +15,7 @@ export function CriteriaLabelSelect(props) {
     <Container>
       {labels.map((label) => {
         return (
-          <CriteriaLabelItem
+          <Item
             handleUpdate={handleUpdate}
             selected={selected}
             labels={labels}

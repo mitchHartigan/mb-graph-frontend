@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { GET_CANON_DATA, GET_PATHS_FROM, GET_CRITERIA_LABELS } from "../API";
+import {
+  GET_CANON_DATA,
+  GET_PATHS_FROM,
+  GET_CRITERIA_LABELS,
+  GET_CONCLUSION_LABELS,
+} from "../API";
 import { PathSelect } from "./PathSelect";
 import { LoadWrapper } from "../LoadWrapper";
 import { TableEditor } from "../table-editor/TableEditor";
-import { CriteriaLabelSelect } from "./CriteriaLabelSelect";
+import { LabelSelect } from "./label-select/LabelSelect";
 
 export function TableBuilder() {
   const defaultOptions = {
@@ -71,17 +76,56 @@ export function TableBuilder() {
   // }
 
   // re-write to be onCriteriaLabelSelect, onConclusionLabelSelect, etc...
-  function onCriteriaLabelSelect(label) {
-    const selectedLabels = [...selected.criteriaLabels];
 
-    if (selectedLabels.includes(label)) {
-      selectedLabels.splice(selectedLabels.indexOf(label), 1);
-      setSelected({ ...selected, criteriaLabels: selectedLabels });
+  // updates selected criteria labels.
+  // clears all options and selected other than criteria by resetting them to default
+  // calls GET_CONCLUSION_LABELS, updates conclusion label options with results.
+  async function onCriteriaLabelSelect(label) {
+    const { criteriaLabels } = selected;
+
+    if (criteriaLabels.includes(label)) {
+      criteriaLabels.splice(criteriaLabels.indexOf(label), 1);
+      setSelected({ ...defaultSelected, criteriaLabels });
+      setLoading({ ...loading, conclusionLabels: true });
+      const { conclusionLabels } = await GET_CONCLUSION_LABELS(criteriaLabels);
+      setOptions({
+        ...defaultOptions,
+        criteriaLabels: options.criteriaLabels,
+        conclusionLabels,
+      });
+      setLoading({ ...loading, conclusionLabels: false });
       return;
     }
 
-    selectedLabels.push(label);
-    setSelected({ ...selected, criteriaLabels: selectedLabels });
+    criteriaLabels.push(label);
+    setSelected({ ...defaultSelected, criteriaLabels });
+    setLoading({ ...loading, conclusionLabels: true });
+    const { conclusionLabels } = await GET_CONCLUSION_LABELS(criteriaLabels);
+    setOptions({
+      ...defaultOptions,
+      criteriaLabels: options.criteriaLabels,
+      conclusionLabels,
+    });
+    setLoading({ ...loading, conclusionLabels: false });
+  }
+
+  async function onConclusionLabelSelect(label) {
+    const { criteriaLabels } = selected;
+
+    if (criteriaLabels.includes(label)) {
+      criteriaLabels.splice(criteriaLabels.indexOf(label), 1);
+      setSelected({ ...defaultSelected, criteriaLabels });
+      const conclusionLabels = await GET_CONCLUSION_LABELS(criteriaLabels);
+      setOptions({ ...defaultOptions, criteriaLabels, conclusionLabels });
+      return;
+    }
+
+    criteriaLabels.push(label);
+    setSelected({ ...defaultSelected, criteriaLabels });
+    setLoading({ ...loading, conclusionLabels: true });
+    const conclusionLabels = await GET_CONCLUSION_LABELS(criteriaLabels);
+    setOptions({ ...defaultOptions, criteriaLabels, conclusionLabels });
+    setLoading({ ...loading, conclusionLabels: false });
   }
 
   async function loadChart() {
@@ -132,15 +176,34 @@ export function TableBuilder() {
         </LoadWrapper>
       </Area> */}
 
+      <p style={{ fontWeight: "bold" }}>Criteria Type Select</p>
       <Area $show={true}>
         <LoadWrapper loading={loading.criteriaLabels}>
-          <CriteriaLabelSelect
+          <LabelSelect
             labels={options.criteriaLabels}
             selected={selected}
             handleUpdate={onCriteriaLabelSelect}
           />
         </LoadWrapper>
+        <button onClick={() => console.log({ options, selected })}>
+          Log State
+        </button>
       </Area>
+
+      <p style={{ fontWeight: "bold" }}>Conclusion Type Select</p>
+      <Area $show={options.conclusionLabels.length > 0}>
+        <LoadWrapper loading={loading.conclusionLabels}>
+          <LabelSelect
+            labels={options.conclusionLabels}
+            selected={selected}
+            handleUpdate={onConclusionLabelSelect}
+          />
+        </LoadWrapper>
+        <button onClick={() => console.log({ options, selected })}>
+          Log State
+        </button>
+      </Area>
+
       {/* <Area $show={true}>
         <LoadWrapper loading={loading.paths}>
           <PathSelect

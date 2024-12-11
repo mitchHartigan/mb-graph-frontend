@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-export function CriteriaLabelItem(props) {
+export function Item(props) {
   const { handleUpdate, selected, value, labels } = props;
 
   if (!labels || labels.length < 1) return;

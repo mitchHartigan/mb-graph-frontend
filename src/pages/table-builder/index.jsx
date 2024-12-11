@@ -54,32 +54,6 @@ export function TableBuilder() {
   const [loading, setLoading] = useState(defaultLoading);
   const [invalid, setInvalid] = useState(false);
 
-  // Need to re-write to take all labels and paths.
-  // async function loadPaths() {
-  //   setLoading({ ...loading, paths: true });
-  //   const { paths } = await GET_PATHS_FROM(selected.labels);
-  //   setPaths(paths);
-  //   setPathItems(paths.map((path) => path.id));
-  //   setLoading({ ...loading, paths: false });
-  // }
-
-  // Deprecating as selecting individual paths won't be needed anymore. Users will
-  // select labels and names instead.
-  // function onPathSelect(pathId) {
-  //   const spaths = [...selected.paths];
-
-  //   if (spaths.includes(pathId)) {
-  //     spaths.splice(spaths.indexOf(pathId), 1);
-  //     setSelected({ ...selected, paths: spaths });
-  //     return;
-  //   }
-
-  //   spaths.push(pathId);
-  //   setSelected({ ...selected, paths: spaths });
-  // }
-
-  // re-write to be onCriteriaLabelSelect, onConclusionLabelSelect, etc...
-
   // updates selected criteria labels.
   // clears all options and selected other than criteria by resetting them to default
   // calls GET_CONCLUSION_LABELS, updates conclusion label options with results.
@@ -221,20 +195,17 @@ export function TableBuilder() {
   async function loadChart() {
     setInvalid(false);
     setLoading({ ...loading, canonData: true });
+    const { paths, pathItems } = selected;
 
     const getSelectedPaths = () => {
-      paths.sort((a, b) => {
+      return paths.sort((a, b) => {
         return pathItems.indexOf(a.id) - pathItems.indexOf(b.id);
-      });
-
-      return paths.filter((path) => {
-        return selected.paths.includes(path.id);
       });
     };
 
     const selectedPaths = getSelectedPaths();
-
     const response = await GET_CANON_DATA(selectedPaths, {});
+
     if (response.success) {
       setCanonData(response.canonData);
       setLoading({ ...loading, canonData: false });
@@ -332,14 +303,8 @@ export function TableBuilder() {
       </Area>
 
       <Area $show={true}>
-        <button onClick={() => console.log({ options, selected })}>
-          Log State
-        </button>
-      </Area>
-
-      {/* <Area $show={true}>
         <button onClick={() => loadChart()}>Build Chart</button>
-      </Area> */}
+      </Area>
 
       <TableArea $show={canonData.length > 0}>
         <LoadWrapper loading={loading.canonData}>
